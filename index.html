@@ -231,4 +231,11 @@ function start(){
 })();
 </script>
 </body>
+<script>
+(function(){var u='';try{u=(JSON.parse(localStorage.getItem('om-data')||'{}').b)||'';}catch(e){}
+var a=document.createElement('a');a.href=u||'#';a.textContent='← 매물장으로';a.title='지도를 닫고 매물장으로 돌아갑니다';
+a.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;background:#1d6b86;color:#fff;font-weight:800;font-size:15px;text-decoration:none;white-space:nowrap';
+a.onclick=function(e){e.preventDefault();try{window.close();}catch(x){}setTimeout(function(){if(u)location.href=u;else history.back();},300);};
+var t=document.querySelector('.top');if(t)t.insertBefore(a,t.firstChild);})();
+</script>
 </html>
