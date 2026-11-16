@@ -284,14 +284,17 @@ function start(){
 
   // ---- 상세 창 (빨간 점을 누르거나 마우스를 올리면) — 필터에 걸린 호수만 ----
   let info=null, active=null, pinsOn=true;
-  function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.f?` · 관리 ${esc(r.f)}`:''}${r.m?` · ${esc(r.m)}`:''}</span></li>`).join(''); }
+  // 상세 창 한 줄: 호수 · 방종류 · 보증금/월세 · 입주일 (관리비는 뺌)
+  function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.m?` · 입주 ${esc(r.m)}`:''}</span></li>`).join(''); }
+  // "충청북도 청주시 청원구 오창읍 양청리 701-3" → "양청리 701-3"
+  const shortAddr=a=>String(a||'').replace(/^.*오창읍\s*/,'')||a;
   function closeInfo(){ if(info){ info.setMap(null); info=null; } if(active&&active.el)active.el.classList.remove('on'); active=null; document.querySelectorAll('.grp.on').forEach(b=>b.classList.remove('on')); }
   function open(g,noPan){
     if(!g.pos||!g.vis.length)return; closeInfo(); active=g; if(g.el)g.el.classList.add('on');
     document.querySelectorAll('.grp').forEach(b=>b.classList.toggle('on',b.dataset.a===g.addr));
     const el=document.createElement('div'); el.className='info';
     el.innerHTML=`<h3><span>${esc(villasOf(g)||g.rows[0].j||'')}</span><button type="button" aria-label="닫기">✕</button></h3>
-      <div class="a">${esc(g.addr)}${g.pos.approx?' (빌라명으로 찾은 근사 위치)':''}</div><ul>${roomsHtml(g)}</ul>
+      <div class="a">${esc(shortAddr(g.addr))}${g.pos.approx?' (근사 위치)':''}</div><ul>${roomsHtml(g)}</ul>
       <a href="https://map.naver.com/p/search/${encodeURIComponent(g.addr)}" target="_blank" rel="noopener">N 네이버지도에서 보기</a>`;
     el.querySelector('button').onclick=closeInfo;
     info=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:1,zIndex:10}); info.setMap(map);
