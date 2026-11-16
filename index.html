@@ -6,10 +6,10 @@
 <title>오창 매물 지도</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap">
 <style>
 [hidden]{display:none!important}
-/* 빌라 원룸 매물장과 같은 색. 지도 전체 화면 + 위 도구줄 + 오른쪽(핸드폰은 아래) 목록 */
+/* 윗줄: [← 매물장으로][검색] ……… [매물보기][위성|지적]. 아래는 지도 + 오른쪽(핸드폰은 아래) 지번 목록 */
 :root{
   --bg:#eef2f3; --panel:#ffffff; --fg:#172126; --muted:#5a6a72; --line:#d6dee2; --line-soft:#e7ecee;
   --accent:#1d6b86; --accent-fg:#ffffff; --accent-soft:#e3eff3; --row-hover:#f4f8f9;
@@ -26,41 +26,71 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;display:flex;flex-direction:column}
 button,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.top{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);
-  padding-top:calc(env(safe-area-inset-top,0px) + 8px);padding-bottom:8px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
-.top h1{margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
-.top h1 i{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--pin);box-shadow:0 0 0 2px var(--pin-ring),0 0 0 3px var(--pin)}
-.cnt{font-size:13px;color:var(--muted);margin-right:auto}
-.cnt b{color:var(--fg);font-variant-numeric:tabular-nums}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
-.seg button{border:none;background:var(--panel);padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.top{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);
+  padding-top:calc(env(safe-area-inset-top,0px) + 8px);padding-bottom:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;background:var(--accent);color:var(--accent-fg);font-weight:800;font-size:15px;text-decoration:none;white-space:nowrap}
+.back:hover{filter:brightness(1.08)}
+.search{display:flex;align-items:center;gap:6px;flex:1 1 260px;max-width:440px;min-width:0}
+.search input{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:8px 12px;font-size:14.5px}
+.search button{border:1px solid var(--accent);background:var(--panel);color:var(--accent);border-radius:9px;padding:8px 14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.sp{flex:1 1 0}
+.top{position:relative;z-index:30}
+.fbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);border-radius:9px;padding:7px 14px;font-weight:800;font-size:14.5px;cursor:pointer;white-space:nowrap}
+.fbtn svg{width:17px;height:17px}
+.fbtn[aria-expanded="true"],.fbtn.on{background:var(--accent);color:var(--accent-fg)}
+.fbtn b{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--pin);color:#fff;font-size:11.5px}
+.fsum{font-size:13px;color:var(--muted);white-space:nowrap}
+.fsum b{color:var(--fg)}
+.fpanel{position:absolute;z-index:40;left:max(12px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 58px);width:340px;max-width:calc(100vw - 24px);max-height:calc(100vh - 80px);overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
+.fh{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.fh b{font-size:15.5px}
+.fl{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:6px}
+.fpanel input[type=search],.fpanel input[type=number]{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:7px 10px;font-size:14.5px}
+.rng{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+/* 방종류(1룸 → 1.5룸 → 2룸…)와 방구분(분리형 → 일체형)은 위에서 아래로 */
+#fType,#fLay{flex-direction:column;align-items:flex-start}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 11px;font-size:13.5px;cursor:pointer}
+.chip small{color:var(--muted);margin-left:3px}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.chk{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:14px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--accent)}
+.fres{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.fres b{color:var(--pin)}
+.tg{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 14px 6px 8px;font-weight:800;font-size:14.5px;cursor:pointer;white-space:nowrap}
+.tg i{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--muted);border:3px solid var(--pin-ring);box-shadow:0 0 0 1px var(--line)}
+.tg[aria-pressed="true"]{border-color:var(--pin);background:#fde7ea;color:#9c1020}
+.tg[aria-pressed="true"] i{background:var(--pin);box-shadow:0 0 0 1px var(--pin)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:none;background:var(--panel);padding:8px 16px;font-size:14.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--line)}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:700}
-.btn{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
-.btn:hover{background:var(--row-hover)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:700}
-.main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 320px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px}
+.main.nolist{grid-template-columns:minmax(0,1fr)}
+.main.nolist .side{display:none}
 #map{min-width:0;min-height:0;background:var(--line-soft)}
 .side{min-height:0;overflow:auto;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
-.side h2{margin:0;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.03em;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
-.grp{border:none;border-bottom:1px solid var(--line-soft);background:transparent;text-align:left;padding:9px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;width:100%}
+.side h2{margin:0;font-size:13px;color:var(--muted);font-weight:700;padding:9px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.grp{border:none;border-bottom:1px solid var(--line-soft);background:transparent;text-align:left;padding:8px 14px;cursor:pointer;display:flex;flex-direction:column;gap:1px;width:100%}
 .grp:hover{background:var(--row-hover)}
 .grp.on{background:var(--accent-soft)}
-.grp .t{font-weight:700;display:flex;gap:6px;align-items:center}
+.grp .t{font-weight:800;display:flex;gap:6px;align-items:center}
 .grp .t i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--pin)}
 .grp .t.miss i{background:var(--muted)}
 .grp .a{font-size:12px;color:var(--muted)}
 .grp .r{font-size:12.5px;font-variant-numeric:tabular-nums}
 .note{font-size:12.5px;color:var(--muted);margin:0;padding:10px 14px}
-.warn{margin:0;padding:8px 14px;background:var(--warn-bg);color:var(--warn);font-size:12.5px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 20px);z-index:60;background:var(--fg);color:var(--panel);padding:9px 16px;border-radius:9px;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:90vw;text-align:center}
 
 /* 지도 위 빨간 점 */
-.pin{position:relative;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.pin{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .pin .dot{width:18px;height:18px;border-radius:50%;background:var(--pin);border:3px solid var(--pin-ring);box-shadow:0 1px 4px rgba(0,0,0,.45)}
 .pin .n{position:absolute;top:-9px;left:10px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#fff;color:var(--pin);font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.4)}
-.pin .lb{margin-top:3px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.92);color:#172126;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.pin .lb{margin-top:3px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.93);color:#172126;font-size:11.5px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .pin.on .dot{width:24px;height:24px}
-.info{transform:translate(-50%,calc(-100% - 22px));background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:300px;font-family:var(--font);font-size:13px;line-height:1.45}
+.found{width:14px;height:14px;border-radius:50%;background:#1d6b86;border:3px solid #fff;box-shadow:0 0 0 2px #1d6b86,0 1px 4px rgba(0,0,0,.4)}
+.info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:300px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
 .info h3{margin:0 0 2px;font-size:14.5px;display:flex;justify-content:space-between;gap:8px}
 .info h3 button{border:none;background:none;cursor:pointer;font-size:15px;color:#5a6a72;padding:0 2px}
 .info .a{color:#5a6a72;font-size:12px;margin-bottom:6px}
@@ -79,78 +109,109 @@ button,input{font:inherit;color:inherit}
 .card code{background:var(--accent-soft);border-radius:4px;padding:1px 5px;font-size:13px;word-break:break-all}
 .card input{width:100%;border:1px solid var(--line);border-radius:7px;background:var(--bg);padding:9px;font-size:16px}
 .card .row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:700}
 .err{color:var(--danger);font-weight:600}
 
 @media (max-width:760px){
+  .fsum{order:6;flex:1 1 100%}
+  .fpanel{left:8px;right:8px;width:auto;top:calc(env(safe-area-inset-top,0px) + 100px)}
+  .fpanel input[type=search],.fpanel input[type=number]{font-size:16px}
+  .sp{display:none}
+  .back{padding:7px 11px;font-size:14px}
+  .tg{padding:5px 10px 5px 7px;font-size:13.5px}
+  .seg button{padding:7px 12px;font-size:13.5px}
   .main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
-  .side{border-left:none;border-top:1px solid var(--line);max-height:38vh;padding-bottom:env(safe-area-inset-bottom,0px)}
-  .side.closed{max-height:none}
-  .side.closed .list{display:none}
-  .cnt{width:100%;order:3;margin-right:0}
-  .seg button,.btn{padding:8px 12px;font-size:14px}
+  .side{border-left:none;border-top:1px solid var(--line);max-height:34vh;padding-bottom:env(safe-area-inset-bottom,0px)}
 }
 </style>
 </head>
 <body>
 <header class="top">
-  <h1><i aria-hidden="true"></i>오창 매물 지도</h1>
-  <span class="cnt" id="cnt">불러오는 중…</span>
+  <a class="back" id="back" href="#" title="지도를 닫고 매물장으로 돌아갑니다">← 매물장으로</a>
+  <button type="button" class="fbtn" id="fBtn" aria-expanded="false" aria-controls="fpanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>필터<b id="fCount" hidden></b></button>
+  <span class="fsum" id="fSum"></span>
+  <span class="sp"></span>
+  <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
   <div class="seg" role="group" aria-label="지도 종류">
-    <button type="button" id="tSky" aria-pressed="true">위성</button><button type="button" id="tRoad" aria-pressed="false">일반</button>
+    <button type="button" id="tSky" aria-pressed="true" title="위성사진 켜기/끄기">위성</button><button type="button" id="tCad" aria-pressed="false" title="지적편집도 켜기/끄기">지적</button>
   </div>
-  <button type="button" class="btn" id="tCad" aria-pressed="true">지적도 켜짐</button>
-  <button type="button" class="btn" id="tFit">매물 전체 보기</button>
 </header>
-<div class="main">
+<div class="fpanel" id="fpanel" hidden>
+  <div class="fh"><b>매물 필터</b><span class="sp"></span><button type="button" class="btn" id="fReset">초기화</button><button type="button" class="btn primary" id="fClose">닫기</button></div>
+  <label class="fl" for="fq">빌라명 · 지번 · 호수</label>
+  <input type="search" id="fq" placeholder="예: 금당빌, 701-3, 301" autocomplete="off">
+  <div class="fl">섹터</div><div class="chips" id="fSec"></div>
+  <div class="fl">방종류</div><div class="chips" id="fType"></div>
+  <div class="fl">방구분</div><div class="chips" id="fLay"></div>
+  <div class="fl">보증금 (만원)</div>
+  <div class="rng"><input type="number" id="fDepMin" min="0" step="50" placeholder="최소" aria-label="보증금 최소"><span>~</span><input type="number" id="fDepMax" min="0" step="50" placeholder="최대" aria-label="보증금 최대"></div>
+  <div class="fl">월세 (만원)</div>
+  <div class="rng"><input type="number" id="fRentMin" min="0" step="5" placeholder="최소" aria-label="월세 최소"><span>~</span><input type="number" id="fRentMax" min="0" step="5" placeholder="최대" aria-label="월세 최대"></div>
+  <label class="chk"><input type="checkbox" id="fNow"> 즉시 입주만</label>
+  <p class="fres" id="fRes"></p>
+</div>
+<div class="main" id="main">
   <div id="map" role="application" aria-label="오창읍 지도"></div>
   <aside class="side" id="side">
     <h2 id="sideHead">지번 목록</h2>
     <div class="list" id="list"></div>
   </aside>
 </div>
+<div class="toast" id="toast" role="status" hidden></div>
 <div class="setup" id="setup" hidden><div class="card" id="setupCard"></div></div>
 
 <script>
-(function(){
+(async function(){
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store=(k,v)=>{ try{ if(v===undefined)return localStorage.getItem(k); if(v===null)localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){ return null; } };
 const fmt=n=>n==null||n===''?'':Number(n).toLocaleString('ko-KR');
 const OCHANG={lat:36.7175,lng:127.4302};
+let toastT; function toast(m){ $('toast').textContent=m; $('toast').hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>$('toast').hidden=true,2600); }
 
-// ---- 매물장에서 넘어온 자료 (#뒤에 실려 옴) → 이 기기에 보관, 주소창에서는 지움 ----
-function decode(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='='; const bin=atob(s);
-  const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i); return JSON.parse(new TextDecoder().decode(bytes)); }
-let payload=null;
-if(location.hash.length>1){ try{ payload=decode(location.hash.slice(1)); store('om-data',JSON.stringify(payload)); if(payload.k)store('om-key',payload.k); }catch(e){} history.replaceState(null,'',location.pathname+location.search); }
+// 이 지도 전용 카카오 JavaScript 키 (이 주소에서만 작동하도록 카카오에 묶여 있음 → 키를 따로 넣을 필요 없음)
+const DEFAULT_KEY='28b328b39b7cc02971942262317822d9';
+// ---- 매물장에서 넘어온 자료: 주소의 ?d= (압축) 또는 # 뒤 → 이 기기에 보관하고 주소창에서는 지움 ----
+function b64ToBytes(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='='; const bin=atob(s);
+  const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i); return bytes; }
+async function readPayload(){ const sp=new URLSearchParams(location.search); let raw=sp.get('d'), z=sp.get('z')==='1';
+  if(!raw&&location.hash.length>1){ raw=location.hash.slice(1); z=false; }
+  if(!raw)return null;
+  try{ let bytes=b64ToBytes(raw);
+    if(z){ const ds=new DecompressionStream('deflate-raw'); bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer()); }
+    return JSON.parse(new TextDecoder().decode(bytes)); }catch(e){ return null; } }
+let payload=await readPayload();
+if(payload){ store('om-data',JSON.stringify(payload)); if(payload.k)store('om-key',payload.k); if(payload.b)store('om-back',payload.b); }
+if(location.search||location.hash.length>1)history.replaceState(null,'',location.pathname);
 if(!payload){ try{ payload=JSON.parse(store('om-data')||'null'); }catch(e){} }
-const KEY=(payload&&payload.k)||store('om-key')||'';
+const KEY=(payload&&payload.k)||store('om-key')||DEFAULT_KEY;
+
+// ---- ← 매물장으로: 이 창을 닫아 매물장으로 돌아감 (닫히지 않으면 매물장 주소로 이동) ----
+const BACK=(payload&&payload.b)||store('om-back')||'';
+$('back').href=BACK||'#';
+$('back').onclick=e=>{ e.preventDefault(); try{ window.close(); }catch(x){} setTimeout(()=>{ if(BACK)location.href=BACK; else history.back(); },300); };
 
 function showSetup(html){ $('setupCard').innerHTML=html; $('setup').hidden=false; }
-function keyForm(msg){
-  showSetup(`<h2>카카오 지도 연결</h2>${msg?`<p class="err">${msg}</p>`:''}
-    <p>빌라 원룸 매물장 왼쪽 위 <b>⚙</b>에 카카오 JavaScript 키를 넣고 <b>통합지도</b>를 누르면 자동으로 열립니다. 여기에 직접 넣어도 됩니다.</p>
+function keyForm(){
+  showSetup(`<h2>카카오 지도 연결</h2>
+    <p>매물장 왼쪽 위 <b>통합지도</b>를 누르면 자동으로 열립니다. 여기에 키를 직접 넣어도 됩니다.</p>
     <input id="keyIn" placeholder="카카오 JavaScript 키 (영문·숫자 32자)" autocomplete="off" value="${esc(KEY)}">
     <div class="row"><button class="btn primary" id="keySave" type="button">저장하고 지도 열기</button></div>
-    <p class="note" style="padding:0">이 지도 주소: <code>${esc(location.origin)}</code> — 카카오 개발자 사이트의 Web 플랫폼 사이트 도메인에 이 주소가 들어 있어야 합니다.</p>`);
-  $('keySave').onclick=()=>{ const k=$('keyIn').value.trim(); if(!/^[0-9a-f]{32}$/i.test(k)){ alertIn('키는 영문·숫자 32자입니다. 카카오 개발자 사이트 > 앱 키 > JavaScript 키를 복사해 주세요.'); return; } store('om-key',k); location.reload(); };
+    <p class="err" id="keyErr" hidden></p>`);
+  $('keySave').onclick=()=>{ const k=$('keyIn').value.trim(); if(!/^[0-9a-f]{32}$/i.test(k)){ $('keyErr').textContent='키는 영문·숫자 32자입니다.'; $('keyErr').hidden=false; return; } store('om-key',k); location.reload(); };
 }
-function alertIn(m){ let p=$('setupCard').querySelector('.err'); if(!p){ p=document.createElement('p'); p.className='err'; $('setupCard').insertBefore(p,$('setupCard').children[1]); } p.textContent=m; }
-
-if(!KEY){ keyForm(''); return; }
+if(!KEY){ keyForm(); return; }
 
 // ---- 카카오 지도 불러오기 ----
 let loadedOk=false;
 const failTimer=setTimeout(()=>{ if(!loadedOk)domainHelp(); },9000);
 function domainHelp(){
   showSetup(`<h2>카카오 지도가 열리지 않습니다</h2>
-    <p>대부분 아래 중 하나입니다.</p>
-    <ol><li>카카오 개발자 사이트 > 내 애플리케이션 > <b>플랫폼 > Web</b>의 사이트 도메인에 <code>${esc(location.origin)}</code> 이 등록돼 있는지</li>
-    <li><b>앱 설정 > 카카오맵</b> 사용 설정이 켜져 있는지 (보이는 경우)</li>
-    <li>넣은 키가 <b>JavaScript 키</b>가 맞는지 (REST API 키가 아님)</li></ol>
-    <p>고친 뒤 1~2분 기다렸다가 다시 열어 보세요.</p>
+    <ol><li>카카오 개발자 사이트 > 앱 > <b>플랫폼 키 > JavaScript 키</b>의 JavaScript SDK 도메인에 <code>${esc(location.origin)}</code> 가 있는지</li>
+    <li><b>카카오맵</b> 사용 설정이 켜져 있는지</li><li>인터넷 연결이 되는지</li></ol>
     <div class="row"><button class="btn primary" type="button" onclick="location.reload()">다시 열기</button><button class="btn" type="button" id="reKey">키 다시 넣기</button></div>`);
-  $('reKey').onclick=()=>{ store('om-key',null); keyForm(''); };
+  $('reKey').onclick=()=>{ store('om-key',null); location.reload(); };
 }
 const sc=document.createElement('script');
 sc.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(KEY)}&libraries=services&autoload=false`;
@@ -160,23 +221,23 @@ document.head.appendChild(sc);
 
 function start(){
   const K=kakao.maps;
-  const map=new K.Map($('map'),{center:new K.LatLng(OCHANG.lat,OCHANG.lng),level:6});
-  map.setMapTypeId(K.MapTypeId.HYBRID);
-  let cad=true; map.addOverlayMapTypeId(K.MapTypeId.USE_DISTRICT);
+  const map=new K.Map($('map'),{center:new K.LatLng(OCHANG.lat,OCHANG.lng),level:5});
   map.addControl(new K.ZoomControl(),K.ControlPosition.RIGHT);
-  const setType=sky=>{ map.setMapTypeId(sky?K.MapTypeId.HYBRID:K.MapTypeId.ROADMAP); $('tSky').setAttribute('aria-pressed',sky); $('tRoad').setAttribute('aria-pressed',!sky); };
-  $('tSky').onclick=()=>setType(true); $('tRoad').onclick=()=>setType(false);
-  $('tCad').onclick=()=>{ cad=!cad; cad?map.addOverlayMapTypeId(K.MapTypeId.USE_DISTRICT):map.removeOverlayMapTypeId(K.MapTypeId.USE_DISTRICT);
-    $('tCad').setAttribute('aria-pressed',cad); $('tCad').textContent=cad?'지적도 켜짐':'지적도 꺼짐'; };
 
-  const rows=(payload&&Array.isArray(payload.p))?payload.p:[];
-  const when=payload&&payload.t?new Date(payload.t):null;
-  if(!rows.length){ $('cnt').innerHTML='표시할 매물이 없습니다'; $('list').innerHTML='<p class="note">빌라 원룸 매물장에서 왼쪽 위 <b>통합지도</b> 아이콘을 누르면 매물이 빨간 점으로 표시됩니다.</p>'; return; }
+  // ---- 위성 / 지적: 각각 켜고 끔. 처음엔 위성만 켜짐 ----
+  let sky=true, cad=false;
+  function applyType(){ map.setMapTypeId(sky?K.MapTypeId.HYBRID:K.MapTypeId.ROADMAP);
+    if(cad)map.addOverlayMapTypeId(K.MapTypeId.USE_DISTRICT); else map.removeOverlayMapTypeId(K.MapTypeId.USE_DISTRICT);
+    $('tSky').setAttribute('aria-pressed',sky); $('tCad').setAttribute('aria-pressed',cad); }
+  $('tSky').onclick=()=>{ sky=!sky; applyType(); };
+  $('tCad').onclick=()=>{ cad=!cad; applyType(); };
+  applyType();
 
-  // 같은 지번끼리 묶기
+  const rows=((payload&&Array.isArray(payload.p))?payload.p:[]).map(r=>({...r,l:/분리/.test(r.l||'')?'분리형':/일체/.test(r.l||'')?'일체형':r.l}));
   const groups=new Map(); rows.forEach(r=>{ if(!r.a)return; if(!groups.has(r.a))groups.set(r.a,{addr:r.a,rows:[]}); groups.get(r.a).rows.push(r); });
   const G=[...groups.values()];
-  $('cnt').innerHTML=`공실 <b>${rows.length}</b>건 · 지번 <b>${G.length}</b>곳${payload.f?' <span>(매물장 필터 적용)</span>':''}${when?` · ${when.getMonth()+1}/${when.getDate()} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')} 기준`:''}`;
+  const villasOf=g=>[...new Set(g.rows.map(r=>r.v).filter(Boolean))].join(', ');
+  const hay=g=>[g.addr,villasOf(g),...g.rows.map(r=>[r.j,r.u].join(' '))].join(' ').toLowerCase().replace(/\s+/g,'');
 
   const geocoder=new K.services.Geocoder(); const places=new K.services.Places();
   let cache={}; try{ cache=JSON.parse(store('om-geo')||'{}'); }catch(e){}
@@ -190,52 +251,98 @@ function start(){
         {location:new K.LatLng(OCHANG.lat,OCHANG.lng),radius:8000});
     }); }); }
 
-  let info=null, active=null;
-  function roomsHtml(g){ return g.rows.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.f?` · 관리 ${esc(r.f)}`:''}${r.m?` · ${esc(r.m)}`:''}</span></li>`).join(''); }
+  // ---- 필터: 매물(호수) 단위로 거르고, 남은 호수가 있는 지번만 빨간 점으로 표시 ----
+  const F={q:'',sec:new Set(),type:new Set(),lay:new Set(),depMin:'',depMax:'',rentMin:'',rentMax:'',now:false};
+  const num=v=>{ if(v===''||v==null)return null; const n=+v; return isFinite(n)?n:null; };
+  function inRange(v,lo,hi){ lo=num(lo); hi=num(hi); if(lo==null&&hi==null)return true; if(v==null||v==='')return false; return !(lo!=null&&v<lo)&&!(hi!=null&&v>hi); }
+  function rowPass(r){
+    if(F.sec.size&&!F.sec.has(r.s||'(없음)'))return false;
+    if(F.type.size&&!F.type.has(r.t||'(없음)'))return false;
+    if(F.lay.size&&!F.lay.has(r.l||'(없음)'))return false;
+    if(!inRange(r.d,F.depMin,F.depMax))return false;
+    if(!inRange(r.r,F.rentMin,F.rentMax))return false;
+    if(F.now&&r.m!=='즉시')return false;
+    if(F.q){ const h=[r.a,r.v,r.j,r.u].join(' ').toLowerCase().replace(/\s+/g,''); if(!F.q.split(/\s+/).every(t=>h.includes(t.replace(/\s+/g,''))))return false; }
+    return true; }
+  const activeCount=()=>F.sec.size+F.type.size+F.lay.size+(F.depMin!==''||F.depMax!==''?1:0)+(F.rentMin!==''||F.rentMax!==''?1:0)+(F.now?1:0)+(F.q?1:0);
+  function chips(el,key,label){ const m=new Map(); rows.forEach(r=>{ const v=r[key]||'(없음)'; m.set(v,(m.get(v)||0)+1); });
+    const vals=[...m.keys()].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true}));
+    el.innerHTML=vals.length?vals.map(v=>`<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="false">${esc(label?label(v):v)}<small>${m.get(v)}</small></button>`).join(''):'<span class="fres">없음</span>';
+    el.onclick=e=>{ const b=e.target.closest('.chip'); if(!b)return; const set=F[el.dataset.k]; const v=b.dataset.v; set.has(v)?set.delete(v):set.add(v); b.setAttribute('aria-pressed',set.has(v)); applyFilter(); }; }
+  $('fSec').dataset.k='sec'; $('fType').dataset.k='type'; $('fLay').dataset.k='lay';
+  chips($('fSec'),'s'); chips($('fType'),'t',v=>v==='(없음)'?v:v+'룸'); chips($('fLay'),'l');
+  [['fDepMin','depMin'],['fDepMax','depMax'],['fRentMin','rentMin'],['fRentMax','rentMax']].forEach(([id,k])=>$(id).addEventListener('input',e=>{ F[k]=e.target.value; applyFilter(); }));
+  $('fq').addEventListener('input',e=>{ F.q=e.target.value.trim().toLowerCase(); applyFilter(); });
+  $('fNow').addEventListener('change',e=>{ F.now=e.target.checked; applyFilter(); });
+  function setPanel(o){ $('fpanel').hidden=!o; $('fBtn').setAttribute('aria-expanded',o); }
+  $('fBtn').onclick=()=>setPanel($('fpanel').hidden);
+  $('fClose').onclick=()=>setPanel(false);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape')setPanel(false); });
+  $('fReset').onclick=()=>{ F.q=''; F.sec.clear(); F.type.clear(); F.lay.clear(); F.depMin=F.depMax=F.rentMin=F.rentMax=''; F.now=false;
+    ['fq','fDepMin','fDepMax','fRentMin','fRentMax'].forEach(id=>$(id).value=''); $('fNow').checked=false;
+    document.querySelectorAll('#fpanel .chip').forEach(b=>b.setAttribute('aria-pressed','false')); applyFilter(); };
+
+  // ---- 상세 창 (빨간 점을 누르거나 마우스를 올리면) — 필터에 걸린 호수만 ----
+  let info=null, active=null, pinsOn=true;
+  function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.f?` · 관리 ${esc(r.f)}`:''}${r.m?` · ${esc(r.m)}`:''}</span></li>`).join(''); }
+  function closeInfo(){ if(info){ info.setMap(null); info=null; } if(active&&active.el)active.el.classList.remove('on'); active=null; document.querySelectorAll('.grp.on').forEach(b=>b.classList.remove('on')); }
   function open(g,noPan){
-    if(!g.pos)return; if(info)info.setMap(null);
-    if(active&&active.el)active.el.classList.remove('on'); active=g; if(g.el)g.el.classList.add('on');
+    if(!g.pos||!g.vis.length)return; closeInfo(); active=g; if(g.el)g.el.classList.add('on');
     document.querySelectorAll('.grp').forEach(b=>b.classList.toggle('on',b.dataset.a===g.addr));
-    const villas=[...new Set(g.rows.map(r=>r.v).filter(Boolean))].join(', ');
     const el=document.createElement('div'); el.className='info';
-    el.innerHTML=`<h3><span>${esc(villas||g.rows[0].j||'')}</span><button type="button" aria-label="닫기">✕</button></h3>
+    el.innerHTML=`<h3><span>${esc(villasOf(g)||g.rows[0].j||'')}</span><button type="button" aria-label="닫기">✕</button></h3>
       <div class="a">${esc(g.addr)}${g.pos.approx?' (빌라명으로 찾은 근사 위치)':''}</div><ul>${roomsHtml(g)}</ul>
       <a href="https://map.naver.com/p/search/${encodeURIComponent(g.addr)}" target="_blank" rel="noopener">N 네이버지도에서 보기</a>`;
-    el.querySelector('button').onclick=()=>{ info.setMap(null); info=null; if(active&&active.el)active.el.classList.remove('on'); };
-    info=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:0,zIndex:10}); info.setMap(map);
+    el.querySelector('button').onclick=closeInfo;
+    info=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:1,zIndex:10}); info.setMap(map);
     if(!noPan)map.panTo(new K.LatLng(g.pos.lat,g.pos.lng));
   }
+
+  // ---- 지번 목록 (오른쪽, 핸드폰은 아래) ----
+  const shown=()=>G.filter(g=>g.vis.length);
   function renderList(){
-    const miss=G.filter(g=>g.done&&!g.pos).length;
-    $('sideHead').textContent=`지번 목록 · ${G.length}곳${miss?` (위치 못 찾음 ${miss})`:''}`;
-    $('list').innerHTML=G.map(g=>`<button type="button" class="grp" data-a="${esc(g.addr)}"><span class="t${g.done&&!g.pos?' miss':''}"><i></i>${esc([...new Set(g.rows.map(r=>r.v).filter(Boolean))].join(', ')||g.addr)}</span>
-      <span class="a">${esc(g.addr)}${g.done&&!g.pos?' · 지도에서 위치를 못 찾았습니다':''}${g.pos&&g.pos.approx?' · 근사 위치':''}</span>
-      <span class="r">${g.rows.map(r=>`${esc(r.u||'')} ${fmt(r.d)}/${fmt(r.r)}`).join(' · ')}</span></button>`).join('');
+    const list=shown(), miss=G.filter(g=>g.done&&!g.pos).length, nRooms=list.reduce((a,g)=>a+g.vis.length,0);
+    $('sideHead').textContent=`지번 목록 · ${list.length}곳${miss?` (위치 못 찾음 ${miss})`:''}`;
+    $('fSum').innerHTML=G.length?`공실 <b>${nRooms}</b>건 · 지번 <b>${list.length}</b>곳${activeCount()?' (필터 적용)':''}`:'';
+    $('fRes').innerHTML=`조건에 맞는 공실 <b>${nRooms}</b>건 · 지번 ${list.length}곳`;
+    const c=activeCount(); $('fCount').hidden=!c; $('fCount').textContent=c; $('fBtn').classList.toggle('on',!!c);
+    $('list').innerHTML=!G.length?'<p class="note">매물장에서 왼쪽 위 <b>통합지도</b>를 누르면 매물이 빨간 점으로 표시됩니다.</p>'
+      :!list.length?'<p class="note">필터 조건에 맞는 매물이 없습니다. <b>필터</b>에서 조건을 줄여 보세요.</p>'
+      :list.map(g=>`<button type="button" class="grp${active===g?' on':''}" data-a="${esc(g.addr)}"><span class="t${g.done&&!g.pos?' miss':''}"><i></i>${esc(villasOf(g)||g.addr)}</span>
+        <span class="a">${esc(g.addr)}${g.done&&!g.pos?' · 위치를 못 찾았습니다':''}${g.pos&&g.pos.approx?' · 근사 위치':''}</span>
+        <span class="r">${g.vis.map(r=>`${esc(r.u||'')} ${fmt(r.d)}/${fmt(r.r)}`).join(' · ')}</span></button>`).join('');
   }
-  $('list').onclick=e=>{ const b=e.target.closest('.grp'); if(!b)return; const g=G.find(x=>x.addr===b.dataset.a); if(g&&g.pos){ map.setLevel(Math.min(map.getLevel(),3)); open(g); } };
-  function fitAll(){ const pts=G.filter(g=>g.pos); if(!pts.length)return; const bd=new K.LatLngBounds(); pts.forEach(g=>bd.extend(new K.LatLng(g.pos.lat,g.pos.lng))); map.setBounds(bd,60,60,60,60); if(pts.length===1)map.setLevel(3); }
-  $('tFit').onclick=fitAll;
+  $('list').onclick=e=>{ const b=e.target.closest('.grp'); if(!b)return; const g=G.find(x=>x.addr===b.dataset.a);
+    if(g&&g.pos){ if(!pinsOn)setPins(true,false); map.setLevel(Math.min(map.getLevel(),3)); open(g); } };
+
+  // ---- 빨간 점 보이기: 매물보기가 켜져 있고, 필터에 걸린 호수가 있는 지번만 ----
+  function paintPins(){ G.forEach(g=>{ if(!g.ov)return; const on=pinsOn&&g.vis.length>0; g.ov.setMap(on?map:null);
+    const n=g.el&&g.el.querySelector('.n'); if(n){ n.textContent=g.vis.length; n.hidden=g.vis.length<2; } }); }
+  function fitAll(){ const pts=shown().filter(g=>g.pos); if(!pts.length)return; const bd=new K.LatLngBounds(); pts.forEach(g=>bd.extend(new K.LatLng(g.pos.lat,g.pos.lng))); map.setBounds(bd,60,60,60,60); if(pts.length===1)map.setLevel(3); }
+  let fitT;
+  function applyFilter(){ G.forEach(g=>g.vis=g.rows.filter(rowPass)); if(active&&!active.vis.length)closeInfo(); paintPins(); renderList();
+    clearTimeout(fitT); fitT=setTimeout(()=>{ if(pinsOn)fitAll(); },500); }
+
+  // ---- 매물보기: 켜면 빨간 점 전체 + 전체가 보이게 맞춤, 끄면 점과 목록을 숨김 ----
+  function setPins(on,fit){ pinsOn=on; $('tPins').setAttribute('aria-pressed',on); if(!on)closeInfo(); paintPins();
+    $('main').classList.toggle('nolist',!on); setTimeout(()=>map.relayout(),0);
+    if(on&&fit!==false)setTimeout(fitAll,30); }
+  $('tPins').onclick=()=>setPins(!pinsOn);
+
+  G.forEach(g=>g.vis=g.rows.slice());
   renderList();
+  if(!G.length){ $('tPins').disabled=true; $('fBtn').disabled=true; return; }
   // 하나씩 차례로 위치 찾기 (같은 주소는 이 기기에 저장돼 다음부터 바로 표시)
   (async()=>{ for(const g of G){ g.pos=await locate(g); g.done=true;
       if(g.pos){ const el=document.createElement('div'); el.className='pin'; el.title=g.addr;
-        const villa=g.rows[0].v||g.rows[0].j||'';
-        el.innerHTML=`<span class="dot"></span>${g.rows.length>1?`<span class="n">${g.rows.length}</span>`:''}<span class="lb">${esc(villa)}</span>`;
+        el.innerHTML=`<span class="dot"></span><span class="n"></span><span class="lb">${esc(g.rows[0].v||g.rows[0].j||'')}</span>`;
         el.onclick=()=>open(g); g.el=el;
-        // PC: 빨간 점에 마우스를 올리기만 해도 상세가 뜸 (지도는 움직이지 않음)
         el.onmouseenter=()=>{ if(matchMedia('(hover:hover)').matches&&active!==g)open(g,true); };
-        new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:0.5,zIndex:3}).setMap(map); }
-      renderList(); }
-    fitAll(); })();
+        g.ov=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:0.5,zIndex:3}); }
+      paintPins(); renderList(); }
+    if(pinsOn)fitAll(); })();
 }
 })();
 </script>
 </body>
-<script>
-(function(){var u='';try{u=(JSON.parse(localStorage.getItem('om-data')||'{}').b)||'';}catch(e){}
-var a=document.createElement('a');a.href=u||'#';a.textContent='← 매물장으로';a.title='지도를 닫고 매물장으로 돌아갑니다';
-a.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;background:#1d6b86;color:#fff;font-weight:800;font-size:15px;text-decoration:none;white-space:nowrap';
-a.onclick=function(e){e.preventDefault();try{window.close();}catch(x){}setTimeout(function(){if(u)location.href=u;else history.back();},300);};
-var t=document.querySelector('.top');if(t)t.insertBefore(a,t.firstChild);})();
-</script>
 </html>
