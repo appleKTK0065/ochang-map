@@ -37,6 +37,7 @@ button,input{font:inherit;color:inherit}
 .back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;background:var(--accent);color:var(--accent-fg);font-weight:800;font-size:15px;text-decoration:none;white-space:nowrap}
 .back:hover{filter:brightness(1.08)}
 .sp{flex:1 1 0}
+.brk{display:none}
 .fbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);border-radius:9px;padding:7px 14px;font-weight:800;font-size:14.5px;cursor:pointer;white-space:nowrap}
 .fbtn svg{width:17px;height:17px}
 .fbtn[aria-expanded="true"],.fbtn.on{background:var(--accent);color:var(--accent-fg)}
@@ -141,8 +142,15 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
   .top>*{flex:none}
   .fbtn,.cnttg{padding:6px 10px!important;font-size:13.5px!important}
   .vbox .tg{padding:2px 9px 2px 6px!important;font-size:12.5px!important}
-  .fsum{order:6;flex:none}
-  .fpanel{left:8px;right:8px;width:auto;top:calc(env(safe-area-inset-top,0px) + 164px);max-height:calc(100dvh - 178px)}
+  /* 핸드폰 배치: 1줄 = 매물장으로 · 매물보기/지번보기 · 위성/지적 / 2줄 = 필터(주황) · 매물내용 */
+  .back{order:1}.vbox{order:2}.seg{order:3;margin-left:auto}
+  .fbtn{order:5;flex-basis:auto}.cnttg{order:6}
+  .top{align-items:center!important;row-gap:8px!important}
+  .fbtn{background:#e8590c!important;border-color:#e8590c!important;color:#fff!important;padding:8px 16px!important;font-size:14.5px!important;box-shadow:0 2px 8px rgba(232,89,12,.35)}
+  .fbtn b{background:#fff!important;color:#e8590c!important}
+  .top .brk{display:block!important;order:4;flex-basis:100%;height:0;margin:-4px 0}
+  .fsum{order:7;flex:none}
+  .fpanel{left:8px;right:8px;width:auto;top:calc(env(safe-area-inset-top,0px) + 180px);max-height:calc(100dvh - 192px)}
   .fpanel input[type=search],.fpanel input[type=number]{font-size:16px}
   .sp{display:none}
   .back{padding:7px 11px;font-size:14px}
@@ -158,7 +166,7 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
   <a class="back" id="back" href="#" title="지도를 닫고 매물장으로 돌아갑니다">← 매물장으로</a>
   <button type="button" class="fbtn" id="fBtn" aria-expanded="false" aria-controls="fpanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>필터<b id="fCount" hidden></b></button>
   <span class="fsum" id="fSum"></span>
-  <span class="sp"></span>
+  <span class="sp"></span><span class="brk" aria-hidden="true"></span>
   <div class="vbox" role="group" aria-label="지도 표시">
     <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
     <button type="button" class="tg" id="tJb" aria-pressed="false" title="눌러서 빨간 점 밑의 지번을 모두 보이기 / 숨기기 (숨겨도 마우스를 올리면 보임)"><i aria-hidden="true"></i>지번보기</button>
