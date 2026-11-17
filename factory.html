@@ -63,6 +63,10 @@ button,input{font:inherit;color:inherit}
 .tg i{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--muted);border:3px solid var(--pin-ring);box-shadow:0 0 0 1px var(--line)}
 .tg[aria-pressed="true"]{border-color:var(--pin);background:#fde7ea;color:#9c1020}
 .tg[aria-pressed="true"] i{background:var(--pin);box-shadow:0 0 0 1px var(--pin)}
+/* 매물보기(위) · 지번보기(아래)를 한 상자에 */
+.vbox{display:inline-flex;flex-direction:column;gap:3px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.vbox .tg{padding:3px 12px 3px 7px;font-size:13px;border-radius:7px;justify-content:flex-start}
+.vbox .tg i{width:13px;height:13px;border-width:2px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .seg button{border:none;background:var(--panel);padding:8px 16px;font-size:14.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--line)}
@@ -104,6 +108,9 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
 .pin .lb{display:none}
 .pin:hover .lb,.pin.on .lb,body.show-jb .pin .lb{display:block}
 .pin:hover{z-index:5}
+/* 점이 움직이지 않게: 지번 글씨는 점 아래에 '떠 있게' 두고(점 상자 크기 그대로), 누른 점은 크기 대신 확대로 표시 */
+.pin .lb{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;pointer-events:none}
+.pin.on .dot{width:11px!important;height:11px!important;transform:scale(1.45)}
 .pin .dot{width:11px!important;height:11px!important;border:none!important;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.4)!important}.pin.on .dot{width:15px!important;height:15px!important}.pin .n{left:calc(50% + 3px)!important;top:-10px!important;min-width:15px!important;height:15px!important;font-size:10px!important}
 .info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:300px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
 .info h3{margin:0 0 2px;font-size:14.5px;display:flex;justify-content:space-between;gap:8px}
@@ -143,8 +150,10 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
   <button type="button" class="fbtn" id="fBtn" aria-expanded="false" aria-controls="fpanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>필터<b id="fCount" hidden></b></button>
   <span class="fsum" id="fSum"></span>
   <span class="sp"></span>
-  <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
-  <button type="button" class="tg" id="tJb" aria-pressed="false" title="눌러서 빨간 점 밑의 지번을 모두 보이기 / 숨기기 (숨겨도 마우스를 올리면 보임)"><i aria-hidden="true"></i>지번보기</button>
+  <div class="vbox" role="group" aria-label="지도 표시">
+    <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
+    <button type="button" class="tg" id="tJb" aria-pressed="false" title="눌러서 빨간 점 밑의 지번을 모두 보이기 / 숨기기 (숨겨도 마우스를 올리면 보임)"><i aria-hidden="true"></i>지번보기</button>
+  </div>
   <label class="cnttg" title="체크하면 매물 개수와 오른쪽 지번 목록이 보입니다"><input type="checkbox" id="tCnt"> 매물개수</label>
   <div class="seg" role="group" aria-label="지도 종류">
     <button type="button" id="tSky" aria-pressed="true" title="위성사진 켜기/끄기">위성</button><button type="button" id="tCad" aria-pressed="false" title="지적편집도 켜기/끄기">지적</button>
