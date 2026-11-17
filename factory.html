@@ -154,7 +154,7 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
     <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
     <button type="button" class="tg" id="tJb" aria-pressed="false" title="눌러서 빨간 점 밑의 지번을 모두 보이기 / 숨기기 (숨겨도 마우스를 올리면 보임)"><i aria-hidden="true"></i>지번보기</button>
   </div>
-  <label class="cnttg" title="체크하면 매물 개수와 오른쪽 지번 목록이 보입니다"><input type="checkbox" id="tCnt"> 매물개수</label>
+  <label class="cnttg" title="체크하면 매물 개수와 오른쪽 지번 목록이 보입니다"><input type="checkbox" id="tCnt"> 매물내용</label>
   <div class="seg" role="group" aria-label="지도 종류">
     <button type="button" id="tSky" aria-pressed="true" title="위성사진 켜기/끄기">위성</button><button type="button" id="tCad" aria-pressed="false" title="지적편집도 켜기/끄기">지적</button>
   </div>
@@ -273,11 +273,12 @@ const R=[...byId.values()].map(derive);
 const NUMS=['bldgMin','bldgMax','landMin','landMax','depMin','depMax','rentMin','rentMax','priceMin','priceMax','kwMin','kwMax','hMin','hMax'];
 const CHECKS=['hoist','keepBlank'];
 const SETS=['cat','st','sizeB','sizeL','sgg','emd','zone','zoneEtc','jimok','jimokEtc'];
-function fresh(){ const s={q:'',cat:new Set(CATS),sgg:new Set(['진천군','음성군']),st:new Set(['lease','sale'])};
+// 지도 기본: 매물 종류는 공장·창고만 체크 (토지는 필요할 때 체크)
+function fresh(){ const s={q:'',cat:new Set(['공장','창고']),sgg:new Set(['진천군','음성군']),st:new Set(['lease','sale'])};
   SETS.forEach(k=>{ if(!s[k])s[k]=new Set(); }); NUMS.forEach(k=>s[k]=''); CHECKS.forEach(k=>s[k]=false); return s; }
 let S=fresh();
 // 처음에는 매물장에서 보던 필터 조건 그대로
-if(extra&&extra.s){ const o=extra.s; S.q=o.q||''; SETS.forEach(k=>{ if(Array.isArray(o[k]))S[k]=new Set(o[k]); }); NUMS.forEach(k=>{ if(o[k]!=null)S[k]=String(o[k]); }); CHECKS.forEach(k=>S[k]=!!o[k]); }
+if(extra&&extra.s){ const o=extra.s; S.q=o.q||''; SETS.forEach(k=>{ if(k!=='cat'&&Array.isArray(o[k]))S[k]=new Set(o[k]); }); // 매물 종류는 지도 기본(공장·창고)으로 NUMS.forEach(k=>{ if(o[k]!=null)S[k]=String(o[k]); }); CHECKS.forEach(k=>S[k]=!!o[k]); }
 function rng(val,min,max,mult=1){ const lo=num(min),hi=num(max); if(lo==null&&hi==null)return true; if(val==null)return S.keepBlank;
   if(lo!=null&&val<lo*mult)return false; if(hi!=null&&val>hi*mult)return false; return true; }
 function pass(x){
