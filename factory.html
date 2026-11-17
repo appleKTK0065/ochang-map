@@ -100,6 +100,10 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
 .pin .n{position:absolute;top:-9px;left:10px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#fff;color:var(--pin);font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .pin .lb{margin-top:3px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.93);color:#172126;font-size:11.5px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .pin.on .dot{width:24px;height:24px}
+/* 지번 글씨: 기본은 숨김 → 마우스를 올리거나(누른 점) '지번보기'를 켜면 보임 */
+.pin .lb{display:none}
+.pin:hover .lb,.pin.on .lb,body.show-jb .pin .lb{display:block}
+.pin:hover{z-index:5}
 .pin .dot{width:11px!important;height:11px!important;border:none!important;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.4)!important}.pin.on .dot{width:15px!important;height:15px!important}.pin .n{left:calc(50% + 3px)!important;top:-10px!important;min-width:15px!important;height:15px!important;font-size:10px!important}
 .info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:300px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
 .info h3{margin:0 0 2px;font-size:14.5px;display:flex;justify-content:space-between;gap:8px}
@@ -140,6 +144,7 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
   <span class="fsum" id="fSum"></span>
   <span class="sp"></span>
   <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
+  <button type="button" class="tg" id="tJb" aria-pressed="false" title="눌러서 빨간 점 밑의 지번을 모두 보이기 / 숨기기 (숨겨도 마우스를 올리면 보임)"><i aria-hidden="true"></i>지번보기</button>
   <label class="cnttg" title="체크하면 매물 개수와 오른쪽 지번 목록이 보입니다"><input type="checkbox" id="tCnt"> 매물개수</label>
   <div class="seg" role="group" aria-label="지도 종류">
     <button type="button" id="tSky" aria-pressed="true" title="위성사진 켜기/끄기">위성</button><button type="button" id="tCad" aria-pressed="false" title="지적편집도 켜기/끄기">지적</button>
@@ -222,7 +227,9 @@ try{
 
 // 한 줄 → 매물 (매물정리 페이지와 같은 이름)
 const CATN=['공장','창고','토지'];
-function rec(r){ return {id:r[0],cat:CATN[r[1]]||'공장',status:r[2],sgg:r[3],emd:r[4],jibun:r[5],kind:r[6],zoneRaw:r[7],bldg:r[8],land:r[9],dep:r[10],rent:r[11],price:r[12],
+// 대표지번 1개만: "화상리 625-103, 625-104 외 2필지" → "화상리 625-103"
+const repJibun=j=>String(j||'').split(/[,，\/]|\s외\s?|\s및\s/)[0].replace(/\s+/g,' ').trim();
+function rec(r){ return {id:r[0],cat:CATN[r[1]]||'공장',status:r[2],sgg:r[3],emd:r[4],jibun:repJibun(r[5]),kind:r[6],zoneRaw:r[7],bldg:r[8],land:r[9],dep:r[10],rent:r[11],price:r[12],
   kwRaw:r[13],hRaw:r[14],hoist:r[15],lat:r[16],lng:r[17],doc:r[18],truck:r[19],road:r[20],reg:r[21]}; }
 const byId=new Map(BASEROWS.map(r=>[r[0],rec(r)]));
 if(extra){ (extra.e||[]).forEach(r=>byId.set(r[0],rec(r))); (extra.x||[]).forEach(id=>byId.delete(id)); }
@@ -407,6 +414,9 @@ function start(){
   // 매물개수 체크 (이 기기에 기억)
   const setCnt=on=>{ document.body.classList.toggle('show-cnt',on); $('tCnt').checked=on; store('fm-cnt',on?'1':'0'); setTimeout(()=>map.relayout(),0); };
   $('tCnt').onchange=e=>setCnt(e.target.checked); setCnt(store('fm-cnt')==='1');
+  // 지번보기 (이 기기에 기억, 처음엔 꺼짐)
+  const setJb=on=>{ document.body.classList.toggle('show-jb',on); $('tJb').setAttribute('aria-pressed',on); store('fm-jb',on?'1':'0'); };
+  $('tJb').onclick=()=>setJb(!document.body.classList.contains('show-jb')); setJb(store('fm-jb')==='1');
   function makePin(g){ const x=g.rows[0], el=document.createElement('div'); el.className='pin'; el.title=addrOf(x);
     el.innerHTML=`<span class="dot"></span><span class="n" hidden></span><span class="lb">${esc(x.jibun||'')}</span>`;
     el.onclick=()=>open(g); el.onmouseenter=()=>{ if(matchMedia('(hover:hover)').matches&&active!==g)open(g,true); }; g.el=el;
