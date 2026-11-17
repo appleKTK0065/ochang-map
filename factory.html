@@ -136,12 +136,13 @@ body:not(.show-cnt) .main{grid-template-columns:minmax(0,1fr)!important}
 
 @media (max-width:760px), (pointer:coarse) and (max-height:540px){
   /* 핸드폰: 위쪽 버튼을 촘촘하게 (모두 보이도록 필요하면 두 줄) */
-  .top{flex-wrap:wrap!important;gap:6px!important;padding-top:calc(env(safe-area-inset-top,0px) + 6px)!important;padding-bottom:6px!important;padding-left:8px!important;padding-right:8px!important;-webkit-overflow-scrolling:touch}
+  /* 일부 핸드폰 브라우저(네이버 앱 등)는 주소창이 페이지 위를 덮음 → 버튼 줄을 두 줄쯤(44px) 아래로 띄움 */
+  .top{flex-wrap:wrap!important;gap:6px!important;padding-top:calc(env(safe-area-inset-top,0px) + 50px)!important;padding-bottom:6px!important;padding-left:8px!important;padding-right:8px!important;-webkit-overflow-scrolling:touch}
   .top>*{flex:none}
   .fbtn,.cnttg{padding:6px 10px!important;font-size:13.5px!important}
   .vbox .tg{padding:2px 9px 2px 6px!important;font-size:12.5px!important}
   .fsum{order:6;flex:none}
-  .fpanel{left:8px;right:8px;width:auto;top:calc(env(safe-area-inset-top,0px) + 120px);max-height:calc(100dvh - 134px)}
+  .fpanel{left:8px;right:8px;width:auto;top:calc(env(safe-area-inset-top,0px) + 164px);max-height:calc(100dvh - 178px)}
   .fpanel input[type=search],.fpanel input[type=number]{font-size:16px}
   .sp{display:none}
   .back{padding:7px 11px;font-size:14px}
