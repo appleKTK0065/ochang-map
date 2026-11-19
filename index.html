@@ -91,13 +91,16 @@ button,input{font:inherit;color:inherit}
 .pin .lb{margin-top:3px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.93);color:#172126;font-size:11.5px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .pin.on .dot{width:24px;height:24px}
 .found{width:14px;height:14px;border-radius:50%;background:#1d6b86;border:3px solid #fff;box-shadow:0 0 0 2px #1d6b86,0 1px 4px rgba(0,0,0,.4)}
-.info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:300px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
+.info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:340px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
 .info h3{margin:0 0 2px;font-size:14.5px;display:flex;justify-content:space-between;gap:8px}
 .info h3 button{border:none;background:none;cursor:pointer;font-size:15px;color:#5a6a72;padding:0 2px}
 .info .a{color:#5a6a72;font-size:12px;margin-bottom:6px}
 .info ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
 .info li{display:flex;gap:6px;font-variant-numeric:tabular-nums}
-.info li b{color:#e0182d;min-width:42px}
+.info li b{color:#e0182d;min-width:42px;flex:none}
+.info li>span{min-width:0;overflow-wrap:anywhere}
+.info li small{display:block;font-size:12px;color:#3b4a52;line-height:1.4;margin-top:1px}
+.info li small.memo{color:#6b4a12;background:#f5ead9;border-radius:4px;padding:1px 6px;margin-top:2px;white-space:pre-wrap}
 .info a{display:inline-block;margin-top:8px;color:#0a8a43;font-weight:700;text-decoration:none;font-size:12.5px}
 
 /* 처음 설정 / 오류 안내 */
@@ -284,14 +287,17 @@ function start(){
     document.querySelectorAll('#fpanel .chip').forEach(b=>b.setAttribute('aria-pressed','false')); applyFilter(); };
 
   // ---- 상세 창 (빨간 점을 누르거나 마우스를 올리면) — 필터에 걸린 호수만 ----
-  let info=null, active=null, pinsOn=true;
+  let info=null, active=null, pinsOn=true, sticky=null; // sticky: 클릭·목록으로 연 창 (마우스를 내려도 유지)
   // 상세 창 한 줄: 호수 · 방종류 · 보증금/월세 · 입주일 (관리비는 뺌)
-  function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.m?` · 입주 ${esc(r.m)}`:''}</span></li>`).join(''); }
+  // 호수 줄 아래에: 현관·방 비밀번호, 메모 (매물장에서 넘어온 값이 있을 때만)
+  function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.m?` · 입주 ${esc(r.m)}`:''}${
+      (r.dr||r.rm)?`<small>🔑 ${[r.dr?'현관 '+esc(r.dr):'',r.rm?'방 '+esc(r.rm):''].filter(Boolean).join(' · ')}</small>`:''}${
+      r.n?`<small class="memo">📝 ${esc(r.n)}</small>`:''}</span></li>`).join(''); }
   // "충청북도 청주시 청원구 오창읍 양청리 701-3" → "양청리 701-3"
   const shortAddr=a=>String(a||'').replace(/^.*오창읍\s*/,'')||a;
   function closeInfo(){ if(info){ info.setMap(null); info=null; } if(active&&active.el)active.el.classList.remove('on'); active=null; document.querySelectorAll('.grp.on').forEach(b=>b.classList.remove('on')); }
   function open(g,noPan){
-    if(!g.pos||!g.vis.length)return; closeInfo(); active=g; if(g.el)g.el.classList.add('on');
+    if(!g.pos||!g.vis.length)return; closeInfo(); active=g; sticky=noPan?null:g; if(g.el)g.el.classList.add('on');
     document.querySelectorAll('.grp').forEach(b=>b.classList.toggle('on',b.dataset.a===g.addr));
     const el=document.createElement('div'); el.className='info';
     el.innerHTML=`<h3><span>${esc(villasOf(g)||g.rows[0].j||'')}</span><button type="button" aria-label="닫기">✕</button></h3>
@@ -342,6 +348,7 @@ function start(){
         el.innerHTML=`<span class="dot"></span><span class="n"></span><span class="lb">${esc(g.rows[0].v||g.rows[0].j||'')}</span>`;
         el.onclick=()=>open(g); g.el=el;
         el.onmouseenter=()=>{ if(matchMedia('(hover:hover)').matches&&active!==g)open(g,true); };
+        el.onmouseleave=()=>{ if(matchMedia('(hover:hover)').matches&&active===g&&sticky!==g)closeInfo(); }; // 커서를 내리면 상세창이 사라짐 (클릭해서 연 창은 ✕로 닫음)
         g.ov=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:0.5,zIndex:3}); }
       paintPins(); renderList(); }
     if(pinsOn)fitAll(); })();
