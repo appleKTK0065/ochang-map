@@ -93,6 +93,8 @@ button,input{font:inherit;color:inherit}
 /* 사진 올림 = 노란 점, 써브 광고 올림 = 파란 점 (둘 다면 파랑) */
 .pin.ph .dot{background:#f5c400!important}
 .pin.sa .dot{background:#1d6fe0!important}
+.me{width:18px;height:18px;border-radius:50%;background:#2a7bff;border:3px solid #fff;box-shadow:0 0 0 2px #2a7bff,0 0 10px 4px rgba(42,123,255,.6);animation:meBlink 1s ease-in-out infinite}
+@keyframes meBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.6)}}
 .found{width:14px;height:14px;border-radius:50%;background:#1d6b86;border:3px solid #fff;box-shadow:0 0 0 2px #1d6b86,0 1px 4px rgba(0,0,0,.4)}
 .info{background:#fff;color:#172126;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.35);padding:10px 12px;min-width:220px;max-width:340px;font-family:var(--font);font-size:13px;line-height:1.45;margin-bottom:26px}
 .info h3{margin:0 0 2px;font-size:14.5px;display:flex;justify-content:space-between;gap:8px}
@@ -140,6 +142,7 @@ button,input{font:inherit;color:inherit}
   <span class="fsum" id="fSum"></span>
   <span class="sp"></span>
   <button type="button" class="tg" id="tPins" aria-pressed="true" title="눌러서 매물 빨간 점을 모두 보이기 / 숨기기"><i aria-hidden="true"></i>매물보기</button>
+  <button type="button" class="tg" id="tGps" aria-pressed="false" title="내 위치를 지도에 표시">📍 내위치</button>
   <div class="seg" role="group" aria-label="지도 종류">
     <button type="button" id="tSky" aria-pressed="true" title="위성사진 켜기/끄기">위성</button><button type="button" id="tCad" aria-pressed="false" title="지적편집도 켜기/끄기">지적</button>
   </div>
@@ -344,6 +347,14 @@ function start(){
     if(on&&fit!==false)setTimeout(fitAll,30); }
   $('tPins').onclick=()=>setPins(!pinsOn);
 
+  let meOv=null, watchId=null; // 내 위치: 깜빡이는 파란 점
+  function showMe(p,pan){ const pos=new K.LatLng(p.coords.latitude,p.coords.longitude);
+    if(!meOv){ const d=document.createElement('div'); d.className='me'; d.title='내 위치'; meOv=new K.CustomOverlay({position:pos,content:d,xAnchor:0.5,yAnchor:0.5,zIndex:20}); meOv.setMap(map); } else meOv.setPosition(pos);
+    if(pan){ map.setLevel(Math.min(map.getLevel(),3)); map.panTo(pos); } }
+  $('tGps').onclick=()=>{ if(!navigator.geolocation){ toast('이 기기는 위치 기능을 지원하지 않습니다'); return; }
+    navigator.geolocation.getCurrentPosition(p=>{ showMe(p,true); $('tGps').setAttribute('aria-pressed',true);
+      if(watchId==null)watchId=navigator.geolocation.watchPosition(q=>showMe(q,false),()=>{},{enableHighAccuracy:true,maximumAge:5000}); },
+      ()=>toast('위치를 가져오지 못했습니다. 위치 권한을 허용해 주세요'),{enableHighAccuracy:true,timeout:10000}); };
   G.forEach(g=>g.vis=g.rows.slice());
   renderList();
   if(!G.length){ $('tPins').disabled=true; $('fBtn').disabled=true; return; }
