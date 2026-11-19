@@ -287,7 +287,8 @@ function start(){
     document.querySelectorAll('#fpanel .chip').forEach(b=>b.setAttribute('aria-pressed','false')); applyFilter(); };
 
   // ---- 상세 창 (빨간 점을 누르거나 마우스를 올리면) — 필터에 걸린 호수만 ----
-  let info=null, active=null, pinsOn=true, sticky=null; // sticky: 클릭·목록으로 연 창 (마우스를 내려도 유지)
+  let info=null, active=null, pinsOn=true, sticky=null, hoverT=null; const leaveSoon=g=>{ clearTimeout(hoverT); hoverT=setTimeout(()=>{ if(active===g&&sticky!==g)closeInfo(); },350); }; // 상세창이 깜빡이지 않게: 커서가 점·상세창 어디에도 없을 때만 0.35초 뒤 닫음
+  // sticky: 클릭·목록으로 연 창 (마우스를 내려도 유지)
   // 상세 창 한 줄: 호수 · 방종류 · 보증금/월세 · 입주일 (관리비는 뺌)
   // 호수 줄 아래에: 현관·방 비밀번호, 메모 (매물장에서 넘어온 값이 있을 때만)
   function roomsHtml(g){ return g.vis.map(r=>`<li><b>${esc(r.u?r.u+'호':'-')}</b><span>${esc([r.t?r.t+'룸':'',r.l].filter(Boolean).join(' '))} · ${fmt(r.d)}/${fmt(r.r)}${r.m?` · 입주 ${esc(r.m)}`:''}${
@@ -304,6 +305,7 @@ function start(){
       <div class="a">${esc(shortAddr(g.addr))}${g.pos.approx?' (근사 위치)':''}</div><ul>${roomsHtml(g)}</ul>
       <a href="https://map.naver.com/p/search/${encodeURIComponent(g.addr)}" target="_blank" rel="noopener">N 네이버지도에서 보기</a>`;
     el.querySelector('button').onclick=closeInfo;
+    el.onmouseenter=()=>clearTimeout(hoverT); el.onmouseleave=()=>{ if(matchMedia('(hover:hover)').matches)leaveSoon(g); };
     info=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:1,zIndex:10}); info.setMap(map);
     if(!noPan)map.panTo(new K.LatLng(g.pos.lat,g.pos.lng));
   }
@@ -347,8 +349,8 @@ function start(){
       if(g.pos){ const el=document.createElement('div'); el.className='pin'; el.title=g.addr;
         el.innerHTML=`<span class="dot"></span><span class="n"></span><span class="lb">${esc(g.rows[0].v||g.rows[0].j||'')}</span>`;
         el.onclick=()=>open(g); g.el=el;
-        el.onmouseenter=()=>{ if(matchMedia('(hover:hover)').matches&&active!==g)open(g,true); };
-        el.onmouseleave=()=>{ if(matchMedia('(hover:hover)').matches&&active===g&&sticky!==g)closeInfo(); }; // 커서를 내리면 상세창이 사라짐 (클릭해서 연 창은 ✕로 닫음)
+        el.onmouseenter=()=>{ clearTimeout(hoverT); if(matchMedia('(hover:hover)').matches&&active!==g)open(g,true); };
+        el.onmouseleave=()=>{ if(matchMedia('(hover:hover)').matches&&active===g)leaveSoon(g); }; // 커서를 내리면 상세창이 사라짐 (클릭해서 연 창은 ✕로 닫음)
         g.ov=new K.CustomOverlay({position:new K.LatLng(g.pos.lat,g.pos.lng),content:el,yAnchor:0.5,zIndex:3}); }
       paintPins(); renderList(); }
     if(pinsOn)fitAll(); })();
